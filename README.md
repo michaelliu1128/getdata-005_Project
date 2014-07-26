@@ -22,4 +22,4 @@ The script `run_analysis.R` which will merge the test and training sets together
 The `CodeBook.md` file explains the transformations performed and the resulting data and variables.
 
 ## Repository Information
-`.gitignore` will not add the `UCI_HAR_DATASET` nor the `tidy.txt` back to the repository.
+`.gitignore` will prevent adding the original dataset `UCI_HAR_DATASET` and the `tidy.txt` to the repository to prevent the user from going over data limits on github.
