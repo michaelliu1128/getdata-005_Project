@@ -1,4 +1,4 @@
-Getting and Cleaning Data Peer Assessment Codebook
+Getting and Cleaning Data Course Project Codebook
 ==================================================
 
 Test and train data were loaded separately. The subject, X, and y files were loaded for both test and train. Headers for the X values were extracted from the `features.txt` file and applied to both test and train datasets.
