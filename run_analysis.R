@@ -44,5 +44,5 @@ tidy <- aggregate(. ~ SubjectID + Activity, data=merged, FUN = mean)
 #give activities better names
 tidy$Activity <- factor(tidy$Activity, labels=activity_labels[,2])
 
-write.tabletidy, file="./tidy.txt", sep="\t", row.names=FALSE)
+write.table(tidy, file="./tidy.txt", sep="\t", row.names=FALSE)
 
