@@ -1,46 +1,48 @@
-setwd("~/Google Drive/code/getdata-005/Course Project")
-training = read.csv("UCI_HAR_Dataset/train/X_train.txt", sep="", header=FALSE)
-training[,562] = read.csv("UCI_HAR_Dataset/train/Y_train.txt", sep="", header=FALSE)
-training[,563] = read.csv("UCI_HAR_Dataset/train/subject_train.txt", sep="", header=FALSE)
+library(reshape2)
 
-testing = read.csv("UCI_HAR_Dataset/test/X_test.txt", sep="", header=FALSE)
-testing[,562] = read.csv("UCI_HAR_Dataset/test/Y_test.txt", sep="", header=FALSE)
-testing[,563] = read.csv("UCI_HAR_Dataset/test/subject_test.txt", sep="", header=FALSE)
+#load the test data
+subject_test <- read.table("UCI_HAR_Dataset/test/subject_test.txt")
+X_test <- read.table("UCI_HAR_Dataset/test/X_test.txt")
+y_test <- read.table("UCI_HAR_Dataset/test/y_test.txt")
 
-activityLabels = read.csv("UCI_HAR_Dataset/activity_labels.txt", sep="", header=FALSE)
+#load the train data
+subject_train <- read.table("UCI_HAR_Dataset/train/subject_train.txt")
+X_train <- read.table("UCI_HAR_Dataset/train/X_train.txt")
+y_train <- read.table("UCI_HAR_Dataset/train/y_train.txt")
 
-# Read features and make the feature names better suited for R with some substitutions
-features = read.csv("UCI_HAR_Dataset/features.txt", sep="", header=FALSE)
-features[,2] = gsub('-mean', 'Mean', features[,2])
-features[,2] = gsub('-std', 'Std', features[,2])
-features[,2] = gsub('[-()]', '', features[,2])
+#load the activity names
+activity_labels <- read.table("UCI_HAR_Dataset/activity_labels.txt")
 
-# Merge training and test sets together
-allData = rbind(training, testing)
+#load the feature names
+features <- read.table("UCI_HAR_Dataset/features.txt")
+headers <- features[,2]
 
-# Get only the data on mean and std. dev.
-colsWeWant <- grep(".*Mean.*|.*Std.*", features[,2])
-# First reduce the features table to what we want
-features <- features[colsWeWant,]
-# Now add the last two columns (subject and activity)
-colsWeWant <- c(colsWeWant, 562, 563)
-# And remove the unwanted columns from allData
-allData <- allData[,colsWeWant]
-# Add the column names (features) to allData
-colnames(allData) <- c(features$V2, "Activity", "Subject")
-colnames(allData) <- tolower(colnames(allData))
+#name columns of test and train features
+names(X_test) <- headers
+names(X_train) <- headers
 
-currentActivity = 1
-for (currentActivityLabel in activityLabels$V2) {
-    allData$activity <- gsub(currentActivity, currentActivityLabel, allData$activity)
-    currentActivity <- currentActivity + 1
-}
+#select only mean and std headers
+mean_and_std <- grepl("mean\\(\\)|std\\(\\)", headers)
 
-allData$activity <- as.factor(allData$activity)
-allData$subject <- as.factor(allData$subject)
+#filter mean and std columns on test and train
+X_test_mean_and_std <- X_test[,mean_and_std]
+X_train_mean_and_std <- X_train[,mean_and_std]
 
-tidy = aggregate(allData, by=list(activity = allData$activity, subject=allData$subject), mean)
-# Remove the subject and activity column, since a mean of those has no use
-tidy[,90] = NULL
-tidy[,89] = NULL
-write.table(tidy, "tidy.txt", sep="\t")
+#merge all test and train rows
+subject_all <- rbind(subject_test, subject_train)
+X_all <- rbind(X_test_mean_and_std, X_train_mean_and_std)
+y_all <- rbind(y_test, y_train)
+
+#combine all vectors/data.frames into one data.frame
+merged <- cbind(subject_all, y_all, X_all)
+names(merged)[1] <- "SubjectID"
+names(merged)[2] <- "Activity"
+
+#tidy = aggregate by subjectid and activity
+tidy <- aggregate(. ~ SubjectID + Activity, data=merged, FUN = mean)
+
+#give activities better names
+tidy$Activity <- factor(tidy$Activity, labels=activity_labels[,2])
+
+write.tabletidy, file="./tidy.txt", sep="\t", row.names=FALSE)
+
